@@ -1,0 +1,9 @@
+﻿@using Umbraco.Cms.Core.Media
+@inherits UmbracoViewPage<PictureModel>
+
+@* <picture>
+    <source srcset="@webpSmall" media="(max-width: 767px)" type="image/webp" />
+    <source srcset="@webpLarge" media="(min-width: 768px)" type="image/webp" />
+    <source srcset="@jpgFallback" media="(min-width: 768px)" type="image/jpeg" />
+    <img src="@jpgFallback" alt="@alt" class="@cssClass" loading="lazy" />
+</picture> *@

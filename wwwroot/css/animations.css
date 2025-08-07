@@ -1,0 +1,92 @@
+.image {
+    opacity: 0;
+    transform: translateY(100px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+    .image.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+.about_content {
+    opacity: 0;
+    transform: translateY(100px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+    .about_content.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+.button-hover-bg {
+    opacity: 0;
+    transform: translateY(100px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+    .button-hover-bg.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+.image.show:nth-of-type(1) {
+    transition-delay: 0s;
+}
+
+.image.show:nth-of-type(2) {
+    transition-delay: 0.15s;
+}
+
+.image.show:nth-of-type(3) {
+    transition-delay: 0.3s;
+}
+
+.image.show:nth-of-type(4) {
+    transition-delay: 0.45s;
+}
+
+.image.show:nth-of-type(5) {
+    transition-delay: 0.6s;
+}
+
+.about_content.show:nth-of-type(1) {
+    transition-delay: 0s;
+}
+
+.about_content.show:nth-of-type(2) {
+    transition-delay: 0.15s;
+}
+
+.about_content.show:nth-of-type(3) {
+    transition-delay: 0.3s;
+}
+
+.about_content.show:nth-of-type(4) {
+    transition-delay: 0.45s;
+}
+
+.about_content.show:nth-of-type(5) {
+    transition-delay: 0.6s;
+}
+
+.button-hover-bg.show:nth-of-type(1) {
+    transition-delay: 0s;
+}
+
+.button-hover-bg.show:nth-of-type(2) {
+    transition-delay: 0.15s;
+}
+
+.button-hover-bg.show:nth-of-type(3) {
+    transition-delay: 0.3s;
+}
+
+.button-hover-bg.show:nth-of-type(4) {
+    transition-delay: 0.45s;
+}
+
+.button-hover-bg.show:nth-of-type(5) {
+    transition-delay: 0.6s;
+}
