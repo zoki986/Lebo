@@ -1,11 +1,111 @@
 // Professional Photography Studio - JavaScript
-// This file is ready for future JavaScript functionality
 
-// Example: Mobile menu toggle functionality
-// function toggleMobileMenu() {
-//   const navMenu = document.querySelector('.nav-menu');
-//   navMenu.classList.toggle('mobile-active');
-// }
+// Burger Menu Functionality
+class BurgerMenu {
+  constructor() {
+    this.burgerButton = document.querySelector('.burger-menu');
+    this.navMenu = document.querySelector('.nav-menu');
+    this.navLinks = document.querySelectorAll('.nav-menu a');
+    this.isOpen = false;
+
+    // Debug logging
+    console.log('BurgerMenu constructor called');
+    console.log('Burger button found:', !!this.burgerButton);
+    console.log('Nav menu found:', !!this.navMenu);
+    console.log('Nav links found:', this.navLinks.length);
+
+    if (this.burgerButton && this.navMenu) {
+      console.log('Initializing burger menu...');
+      this.init();
+    } else {
+      console.error('Burger menu elements not found!');
+    }
+  }
+
+  init() {
+    // Toggle menu when burger button is clicked
+    this.burgerButton.addEventListener('click', (e) => {
+      console.log('Burger button clicked!');
+      e.preventDefault();
+      this.toggleMenu();
+    });
+
+    // Close menu when a nav link is clicked (mobile)
+    this.navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          this.closeMenu();
+        }
+      });
+    });
+
+    // Close menu when clicking outside (mobile)
+    document.addEventListener('click', (e) => {
+      if (this.isOpen &&
+          !this.navMenu.contains(e.target) &&
+          !this.burgerButton.contains(e.target)) {
+        this.closeMenu();
+      }
+    });
+
+    // Close menu on escape key and handle keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isOpen) {
+        this.closeMenu();
+        this.burgerButton.focus(); // Return focus to burger button
+      }
+
+      // Handle Enter and Space key on burger button
+      if ((e.key === 'Enter' || e.key === ' ') &&
+          document.activeElement === this.burgerButton) {
+        e.preventDefault();
+        this.toggleMenu();
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && this.isOpen) {
+        this.closeMenu();
+      }
+    });
+  }
+
+  toggleMenu() {
+    console.log('toggleMenu called, isOpen:', this.isOpen);
+    if (this.isOpen) {
+      console.log('Closing menu...');
+      this.closeMenu();
+    } else {
+      console.log('Opening menu...');
+      this.openMenu();
+    }
+  }
+
+  openMenu() {
+    this.navMenu.classList.add('active');
+    this.burgerButton.classList.add('active');
+    this.burgerButton.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+    this.isOpen = true;
+
+    // Focus first nav link for keyboard accessibility
+    setTimeout(() => {
+      const firstLink = this.navMenu.querySelector('a');
+      if (firstLink) {
+        firstLink.focus();
+      }
+    }, 300); // Wait for animation to complete
+  }
+
+  closeMenu() {
+    this.navMenu.classList.remove('active');
+    this.burgerButton.classList.remove('active');
+    this.burgerButton.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = ''; // Restore scrolling
+    this.isOpen = false;
+  }
+}
 
 // Portfolio Category Filtering
 class PortfolioFilter {
@@ -592,6 +692,29 @@ document.addEventListener('DOMContentLoaded', function() {
     if (lazyImages.length > 0) {
       window.lazyImageLoader = new LazyImageLoader();
     }
+  }
+
+  // Initialize Burger Menu
+  window.burgerMenu = new BurgerMenu();
+
+  // Fallback direct event listener for burger menu
+  const fallbackBurger = document.querySelector('.burger-menu');
+  const fallbackNav = document.querySelector('.nav-menu');
+
+  if (fallbackBurger && fallbackNav) {
+    console.log('Setting up fallback burger menu listener');
+    fallbackBurger.addEventListener('click', function(e) {
+      console.log('Fallback burger clicked!');
+      e.preventDefault();
+      fallbackNav.classList.toggle('active');
+      fallbackBurger.classList.toggle('active');
+
+      if (fallbackNav.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    });
   }
 
   console.log('Professional Photography Studio website loaded');

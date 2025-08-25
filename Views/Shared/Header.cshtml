@@ -1,12 +1,29 @@
+@using Lebo.Models.Generated
+@using Lebo.Models.Pages
+@inherits UmbracoViewPage 
+@{
+
+    var currentPage = UmbracoContext?.PublishedRequest?.PublishedContent;
+}
+
 <header>
     <nav class="container">
-        <a href="/" class="logo">
+        <a href="/" class="logo @(currentPage is Home ? "active" : "")">
             <img src="/assets/Logo.svg" alt="Photography Studio Logo" class="logo-img">
         </a>
+
+        <!-- Burger Menu Button -->
+        <button class="burger-menu" aria-label="Toggle navigation menu" aria-expanded="false">
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+            <span class="burger-line"></span>
+        </button>
+
+        <!-- Navigation Menu -->
         <ul class="nav-menu">
-            <li><a href="/portfolio" {{PORTFOLIO_ACTIVE}}>Portfolio</a></li>
-            <li><a href="/about" {{ABOUT_ACTIVE}}>About</a></li>
-            <li><a href="/contact" {{CONTACT_ACTIVE}}>Contact</a></li>
+            <li><a href="/portfolio" class="@(currentPage is Portfolio ? "active" : "")">Portfolio</a></li>
+            <li><a href="/about" class="@(currentPage is About ? "active" : "")">About</a></li>
+            <li><a href="/contact" class="@(currentPage is Contact ? "active" : "")">Contact</a></li>
         </ul>
     </nav>
 </header>

@@ -40,8 +40,6 @@
 
 	<PropertyGroup>
 		<!-- Remove RazorCompileOnBuild and RazorCompileOnPublish when not using ModelsMode InMemoryAuto -->
-		<RazorCompileOnBuild>false</RazorCompileOnBuild>
-		<RazorCompileOnPublish>true</RazorCompileOnPublish>
 		<CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
 	</PropertyGroup>
 

@@ -12,7 +12,7 @@
 
 <body>
     @{
-        await Html.RenderPartialAsync("Header");
+        await Html.RenderPartialAsync("Header", UmbracoContext.PublishedRequest.PublishedContent);
     }
 
     @RenderBody()

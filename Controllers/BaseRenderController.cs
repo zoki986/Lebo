@@ -22,7 +22,8 @@ namespace Lebo.Controllers
 
         public override IActionResult Index()
         {
-            return CurrentTemplate(new TViewModel());
+            var viewModel = new TViewModel();
+            return CurrentTemplate(viewModel);
         }
 
         protected abstract TPage Page { get; }
