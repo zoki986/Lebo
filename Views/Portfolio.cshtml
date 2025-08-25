@@ -1,0 +1,293 @@
+﻿@inherits UmbracoViewPage<PortfolioViewModel>
+
+@{
+    Layout = "_Layout.cshtml";
+}
+<main>
+    <section class="section">
+        <div class="container">
+            <div class="portfolio-intro">
+                <h2>My Work</h2>
+                <p>
+                    Welcome to my photography portfolio. Here you'll find a showcase of my work through the years,
+                    featuring food photography, portraits, and commercial projects. Each image tells a story and
+                    captures the essence of the moment.
+                </p>
+            </div>
+
+@*             <div class="portfolio-categories">
+                <button class="category-btn active" data-filter="all">All</button>
+                <button class="category-btn" data-filter="fashion-portraits">Fashion & Portraits</button>
+                <button class="category-btn" data-filter="food-beverage">Food & Beverage</button>
+            </div> *@
+
+            <div class="portfolio-grid" id="portfolioGrid">
+                <!-- Initial images will be loaded here by JavaScript -->
+                @foreach (var image in Model.Images)
+                {
+                    <div class="portfolio-item" >
+                        <img src="@image.CropedUrl" data-main-url="@image.OriginalUrl" loading="lazy" class="portfolio-image">
+                    </div>
+                }
+            </div>
+
+            <!-- Load more functionality is handled automatically by scroll -->
+        </div>
+    </section>
+</main>
+
+<!-- Image Lightbox Modal -->
+<div id="imageLightbox" class="lightbox-overlay">
+    <div class="lightbox-container">
+        <button class="lightbox-close" aria-label="Close">&times;</button>
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="" class="lightbox-image">
+            <div class="lightbox-loading">
+                <div class="spinner"></div>
+            </div>
+            <div class="lightbox-mobile-hint" id="mobileHint">
+                Use keyboard arrows to navigate • Tap to close
+            </div>
+        </div>
+        <div class="lightbox-nav">
+            <button class="lightbox-prev" aria-label="Previous image">&#8249;</button>
+            <button class="lightbox-next" aria-label="Next image">&#8250;</button>
+        </div>
+    </div>
+</div>
+<!-- New Portfolio API System -->
+@* <script src="/js/portfolio.js"></script>
+ *@
+<script>
+    // Portfolio Image Lightbox and Preloading System
+    class PortfolioLightbox {
+        constructor() {
+            this.lightbox = document.getElementById('imageLightbox');
+            this.lightboxImage = document.getElementById('lightboxImage');
+            this.lightboxLoading = document.querySelector('.lightbox-loading');
+            this.closeBtn = document.querySelector('.lightbox-close');
+            this.prevBtn = document.querySelector('.lightbox-prev');
+            this.nextBtn = document.querySelector('.lightbox-next');
+            this.mobileHint = document.getElementById('mobileHint');
+
+            this.currentImageIndex = 0;
+            this.images = [];
+            this.preloadedImages = new Map();
+            this.isMobile = window.innerWidth <= 480;
+
+            this.init();
+
+            // Update mobile detection on resize/orientation change
+            window.addEventListener('resize', () => {
+                this.isMobile = window.innerWidth <= 480;
+            });
+        }
+
+        init() {
+            this.setupEventListeners();
+            this.collectImages();
+            this.startPreloading();
+        }
+
+        setupEventListeners() {
+            // Close lightbox events
+            this.closeBtn.addEventListener('click', () => this.closeLightbox());
+            this.lightbox.addEventListener('click', (e) => {
+                if (e.target === this.lightbox) this.closeLightbox();
+            });
+
+            // Navigation events (only on desktop)
+            if (!this.isMobile) {
+                this.prevBtn.addEventListener('click', () => this.showPreviousImage());
+                this.nextBtn.addEventListener('click', () => this.showNextImage());
+            }
+
+            // Keyboard events
+            document.addEventListener('keydown', (e) => {
+                if (!this.lightbox.classList.contains('active')) return;
+
+                switch(e.key) {
+                    case 'Escape':
+                        this.closeLightbox();
+                        break;
+                    case 'ArrowLeft':
+                        this.showPreviousImage();
+                        break;
+                    case 'ArrowRight':
+                        this.showNextImage();
+                        break;
+                }
+            });
+
+            // Image click events (delegated)
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('portfolio-image')) {
+                    e.preventDefault();
+                    this.openLightbox(e.target);
+                }
+            });
+        }
+
+        collectImages() {
+            this.images = Array.from(document.querySelectorAll('.portfolio-image'));
+        }
+
+        startPreloading() {
+            // Preload images in batches to avoid overwhelming the browser
+            const batchSize = 3;
+            let currentBatch = 0;
+
+            const preloadBatch = () => {
+                const start = currentBatch * batchSize;
+                const end = Math.min(start + batchSize, this.images.length);
+
+                for (let i = start; i < end; i++) {
+                    this.preloadImage(this.images[i]);
+                }
+
+                currentBatch++;
+                if (end < this.images.length) {
+                    // Preload next batch after a short delay
+                    setTimeout(preloadBatch, 500);
+                }
+            };
+
+            // Start preloading after page load
+            if (document.readyState === 'complete') {
+                setTimeout(preloadBatch, 1000);
+            } else {
+                window.addEventListener('load', () => {
+                    setTimeout(preloadBatch, 1000);
+                });
+            }
+        }
+
+        preloadImage(imgElement) {
+            const fullSizeUrl = imgElement.getAttribute('data-main-url');
+            if (!fullSizeUrl || this.preloadedImages.has(fullSizeUrl)) return;
+
+            const preloadImg = new Image();
+            preloadImg.onload = () => {
+                this.preloadedImages.set(fullSizeUrl, preloadImg);
+                console.log('Preloaded:', fullSizeUrl);
+            };
+            preloadImg.onerror = () => {
+                console.warn('Failed to preload:', fullSizeUrl);
+            };
+            preloadImg.src = fullSizeUrl;
+        }
+
+        openLightbox(clickedImage) {
+            this.currentImageIndex = this.images.indexOf(clickedImage);
+            this.showImage(clickedImage);
+            this.lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Show mobile hint briefly on mobile devices
+            if (this.isMobile && this.mobileHint) {
+                this.showMobileHint();
+            }
+        }
+
+        closeLightbox() {
+            this.lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        showImage(imgElement) {
+            const fullSizeUrl = imgElement.getAttribute('data-main-url');
+
+            // Show loading spinner
+            this.lightboxLoading.style.display = 'flex';
+            this.lightboxImage.style.opacity = '0';
+
+            // Check if image is preloaded
+            if (this.preloadedImages.has(fullSizeUrl)) {
+                // Use preloaded image
+                this.lightboxImage.src = fullSizeUrl;
+                this.lightboxLoading.style.display = 'none';
+                this.lightboxImage.style.opacity = '1';
+            } else {
+                // Load image on demand
+                const img = new Image();
+                img.onload = () => {
+                    this.lightboxImage.src = fullSizeUrl;
+                    this.lightboxLoading.style.display = 'none';
+                    this.lightboxImage.style.opacity = '1';
+                    this.preloadedImages.set(fullSizeUrl, img);
+                };
+                img.onerror = () => {
+                    this.lightboxLoading.style.display = 'none';
+                    console.error('Failed to load full-size image:', fullSizeUrl);
+                };
+                img.src = fullSizeUrl;
+            }
+
+            // Update navigation buttons
+            this.updateNavigation();
+        }
+
+        showPreviousImage() {
+            if (this.currentImageIndex > 0) {
+                this.currentImageIndex--;
+                this.showImage(this.images[this.currentImageIndex]);
+            }
+        }
+
+        showNextImage() {
+            if (this.currentImageIndex < this.images.length - 1) {
+                this.currentImageIndex++;
+                this.showImage(this.images[this.currentImageIndex]);
+            }
+        }
+
+        updateNavigation() {
+            // Only show navigation buttons on desktop
+            if (!this.isMobile) {
+                this.prevBtn.style.display = this.currentImageIndex > 0 ? 'block' : 'none';
+                this.nextBtn.style.display = this.currentImageIndex < this.images.length - 1 ? 'block' : 'none';
+            }
+        }
+
+        showMobileHint() {
+            if (!this.mobileHint) return;
+
+            // Show hint
+            this.mobileHint.style.opacity = '1';
+
+            // Hide hint after 3 seconds
+            setTimeout(() => {
+                if (this.mobileHint) {
+                    this.mobileHint.style.opacity = '0';
+                }
+            }, 3000);
+        }
+
+        // Method to refresh images when new ones are loaded via AJAX
+        refreshImages() {
+            this.collectImages();
+            // Preload new images
+            const newImages = this.images.slice(-8); // Assume last 8 are new
+            newImages.forEach(img => this.preloadImage(img));
+        }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        window.portfolioLightbox = new PortfolioLightbox();
+
+        // Initialize Portfolio Manager if available
+        if (typeof PortfolioManager !== 'undefined') {
+            window.portfolioManager = new PortfolioManager();
+
+            // Hook into portfolio manager to refresh lightbox when new images load
+            const originalLoadMoreImages = window.portfolioManager.loadMoreImages;
+            window.portfolioManager.loadMoreImages = async function() {
+                await originalLoadMoreImages.call(this);
+                if (window.portfolioLightbox) {
+                    window.portfolioLightbox.refreshImages();
+                }
+            };
+        }
+    });
+</script>

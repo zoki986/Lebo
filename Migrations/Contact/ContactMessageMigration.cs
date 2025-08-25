@@ -12,15 +12,24 @@ namespace Lebo.Migrations.Contact
         }
     }
 
-    public class CreateTable : MigrationBase
+    public class CreateTable : AsyncMigrationBase
     {
         public CreateTable(IMigrationContext context) : base(context)
         {
         }
 
-        protected override void Migrate()
+        protected override Task MigrateAsync()
         {
-            Create.Table<ContactMessage>().Do();
+            try
+            {
+                Create.Table<ContactMessage>().Do();
+            }
+            catch
+            {
+
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

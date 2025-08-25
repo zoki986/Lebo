@@ -1,0 +1,35 @@
+{
+  "$schema": "../../umbraco-package-schema.json",
+  "name": "ContactMessages.Package",
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "type": "section",
+      "alias": "contactMessages",
+      "name": "Contact Messages",
+      "weight": 100,
+      "meta": {
+        "label": "Contact Messages",
+        "pathname": "contact-messages"
+      }
+    },
+    {
+      "type": "dashboard",
+      "alias": "contactMessages.dashboard",
+      "name": "Contact Messages Dashboard",
+      "element": "/App_Plugins/contactMessages/contact-messages-dashboard.js",
+      "elementName": "contact-messages-dashboard",
+      "weight": 10,
+      "meta": {
+        "label": "Contact Messages",
+        "pathname": "contact-messages"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "contactMessages"
+        }
+      ]
+    }
+  ]
+}

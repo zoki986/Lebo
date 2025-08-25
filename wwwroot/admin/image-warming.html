@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Image Warming - Admin Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007acc;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            color: #007acc;
+            font-weight: bold;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007acc;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Portfolio Image Warming Tool</h1>
+        <p>This tool pre-generates image crops to improve loading performance. Use it after uploading new images or when you notice slow loading times.</p>
+
+        <div class="section">
+            <h2>📊 Quick Actions</h2>
+            <button onclick="warmAllImages()">🔥 Warm All Images</button>
+            <button onclick="clearCache()">🗑️ Clear All Cache</button>
+            <button onclick="clearMainPageCache()">🏠 Clear Main Page Cache</button>
+            <button onclick="getCacheStatus()">🔍 Cache Status</button>
+            <button onclick="getStats()">📈 Get Statistics</button>
+            
+            <div class="loading" id="loading">⏳ Processing...</div>
+            <div class="result" id="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Category-Specific Warming</h2>
+            <button onclick="warmCategory('all')">Warm All Categories</button>
+            <button onclick="warmCategory('fashion-portraits')">Warm Fashion & Portraits</button>
+            <button onclick="warmCategory('food-beverage')">Warm Food & Beverage</button>
+            
+            <div class="result" id="categoryResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Instructions</h2>
+            <ol>
+                <li><strong>Warm All Images:</strong> Pre-generates crops for all portfolio images (recommended after bulk uploads)</li>
+                <li><strong>Category Warming:</strong> Warm specific categories only</li>
+                <li><strong>Clear All Cache:</strong> Clears all portfolio cache (forces fresh data)</li>
+                <li><strong>Clear Main Page Cache:</strong> Clears only the main portfolio page cache (faster, targeted clearing)</li>
+                <li><strong>Cache Status:</strong> Shows current cache status and what's cached in memory</li>
+                <li><strong>Get Statistics:</strong> Shows portfolio statistics and performance metrics</li>
+            </ol>
+            
+            <div class="info result">
+                <strong>💡 Performance Tips:</strong>
+                • Run "Warm All Images" after uploading new photos
+                • Use category warming for targeted optimization
+                • Clear cache if you notice stale data
+                • Check browser Network tab to verify improved load times
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/portfolio';
+        
+        function showLoading(show = true) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function showResult(message, type = 'info', targetId = 'result') {
+            const resultDiv = document.getElementById(targetId);
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = typeof message === 'string' ? message : JSON.stringify(message, null, 2);
+            resultDiv.style.display = 'block';
+        }
+        
+        async function makeRequest(url, method = 'GET') {
+            try {
+                showLoading(true);
+                const response = await fetch(url, { method });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data, 'success');
+                    return data;
+                } else {
+                    showResult(`Error: ${data.message || 'Unknown error'}`, 'error');
+                    return null;
+                }
+            } catch (error) {
+                showResult(`Network Error: ${error.message}`, 'error');
+                return null;
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function warmAllImages() {
+            console.log('🔥 Starting warm all images...');
+            const result = await makeRequest(`${API_BASE}/warm-all`, 'POST');
+            if (result) {
+                console.log('✅ Warm all completed:', result);
+            }
+        }
+        
+        async function warmCategory(category) {
+            console.log(`🔥 Starting warm category: ${category}`);
+            const result = await makeRequest(`${API_BASE}/warm-category/${category}`, 'POST');
+            if (result) {
+                showResult(result, 'success', 'categoryResult');
+                console.log(`✅ Warm category ${category} completed:`, result);
+            }
+        }
+        
+        async function clearCache() {
+            console.log('🗑️ Clearing all cache...');
+            const result = await makeRequest(`${API_BASE}/clear-cache`, 'POST');
+            if (result) {
+                console.log('✅ All cache cleared:', result);
+            }
+        }
+
+        async function clearMainPageCache() {
+            console.log('🏠 Clearing main page cache...');
+            const result = await makeRequest(`${API_BASE}/clear-main-cache`, 'POST');
+            if (result) {
+                console.log('✅ Main page cache cleared:', result);
+            }
+        }
+
+        async function getCacheStatus() {
+            console.log('🔍 Getting cache status...');
+            const result = await makeRequest(`${API_BASE}/cache-status`);
+            if (result) {
+                console.log('✅ Cache status retrieved:', result);
+            }
+        }
+        
+        async function getStats() {
+            console.log('📈 Getting statistics...');
+            const result = await makeRequest(`${API_BASE}/stats`);
+            if (result) {
+                console.log('✅ Stats retrieved:', result);
+            }
+        }
+        
+        // Auto-load stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Image Warming Tool loaded');
+            // Uncomment to auto-load stats
+            // getStats();
+        });
+    </script>
+</body>
+</html>

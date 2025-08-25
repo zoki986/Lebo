@@ -3,7 +3,7 @@
 namespace Lebo.Models.Contact
 {
     [TableName("ContactMessages")]
-    [PrimaryKey("Id")]
+    [PrimaryKey("Id", AutoIncrement = false)]
     [ExplicitColumns]
     public class ContactMessage
     {
@@ -30,6 +30,8 @@ namespace Lebo.Models.Contact
         public string Email { get; set; } = default!;
         public string Message { get; set; } = default!;
         public DateTime SubmittedAt { get; set; } = DateTime.Today;
+        public string? Website { get; set; }
+        public long? FormRenderedAt { get; set; }
 
         public ContactMessage ToModel()
         {
@@ -42,7 +44,7 @@ namespace Lebo.Models.Contact
             };
         }
 
-        public ContactMessageDto FromModel(ContactMessage message)
+        public static ContactMessageDto FromModel(ContactMessage message)
         {
             return new ContactMessageDto
             {

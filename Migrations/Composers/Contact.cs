@@ -15,7 +15,7 @@ namespace Lebo.Migrations.Composers
             builder.Components().Append<ContactMigrationComponent>();
         }
     }
-    public class ContactMigrationComponent : IComponent
+    public class ContactMigrationComponent : IAsyncComponent
     {
         private readonly ICoreScopeProvider _scopeProvider;
         private readonly IMigrationPlanExecutor _migrationPlanExecutor;
@@ -34,7 +34,7 @@ namespace Lebo.Migrations.Composers
         }
 
 
-        public void Initialize()
+        public async Task InitializeAsync(bool isRestarting, CancellationToken cancellationToken)
         {
             if (_runtimeState.Level < RuntimeLevel.Run)
             {
@@ -43,11 +43,12 @@ namespace Lebo.Migrations.Composers
 
             var plan = new ContactMessageMigration();
             var upgrader = new Upgrader(plan);
-            upgrader.Execute(_migrationPlanExecutor, _scopeProvider, _keyValueService);
+            await upgrader.ExecuteAsync(_migrationPlanExecutor, _scopeProvider, _keyValueService);
         }
 
-        public void Terminate()
+        public Task TerminateAsync(bool isRestarting, CancellationToken cancellationToken)
         {
+            return Task.CompletedTask;
         }
     }
 }

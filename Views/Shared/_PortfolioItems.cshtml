@@ -1,0 +1,34 @@
+@using Lebo.Services
+@model PagedResult<PortfolioMediaService.PortfolioImage>
+
+
+@if (Model?.Items?.Any() == true)
+{
+    @foreach (var image in Model.Items)
+    {
+        <div class="portfolio-item" data-category="@image.Category" data-id="@image.Id">
+            <img src="@image.Url"
+                 alt="@image.Alt"
+                 title="@image.Title"
+                 loading="lazy"
+                 data-main-url="@image.OriginalUrl"
+                 class="portfolio-image"/>
+        </div>
+    }
+    
+    @* Add pagination metadata as data attributes for JavaScript *@
+    <div class="portfolio-pagination-data" 
+         data-current-page="@Model.Page"
+         data-total-pages="@Model.TotalPages"
+         data-has-next="@Model.HasNextPage.ToString().ToLower()"
+         data-has-previous="@Model.HasPreviousPage.ToString().ToLower()"
+         data-total-count="@Model.TotalCount"
+         style="display: none;">
+    </div>
+}
+else
+{
+    <div class="portfolio-no-results">
+        <p>No images found for the selected category.</p>
+    </div>
+}
